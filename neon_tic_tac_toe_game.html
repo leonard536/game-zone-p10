@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Tic-Tac-Toe</title>
+  <style>
+    /* CSS CSS Reset & Base Theme Settings */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    :root {
+      --bg-color: #050714;
+      --card-bg: rgba(13, 18, 41, 0.75);
+      --grid-border: #00d2ff;
+      --grid-glow: rgba(0, 210, 255, 0.6);
+      --color-x: #ff0055;
+      --glow-x: rgba(ff, 0, 85, 0.85);
+      --color-o: #00f3ff;
+      --glow-o: rgba(0, 243, 255, 0.85);
+      --text-main: #ffffff;
+      --text-muted: #8a99ad;
+      --accent: #7928ca;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 85, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(0, 243, 255, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(10, 14, 35, 1) 0%, rgba(5, 7, 20, 1) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Header & Title Styling */
+    header {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #00f3ff 0%, #ffffff 50%, #ff0055 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    /* Mode Selector Buttons */
+    .mode-selector {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .mode-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .symbol-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 100%;
+      font-size: 0.8rem;
+    }
+
+    .selector-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .symbol-btn-group {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .symbol-btn {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .symbol-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-color: rgba(0, 210, 255, 0.5);
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+    }
+
+    /* Turn Indicator Banner */
+    .status-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 210, 255, 0.2);
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .turn-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .player-symbol {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+
+    .symbol-x {
+      color: var(--color-x);
+      text-shadow: 0 0 8px var(--glow-x);
+    }
+
+    .symbol-o {
+      color: var(--color-o);
+      text-shadow: 0 0 8px var(--glow-o);
+    }
+
+    /* Scoreboard */
+    .scoreboard {
+      display: flex;
+      gap: 12px;
+      font-size: 0.8rem;
+    }
+
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .score-val {
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    /* Game Board Grid */
+    .board-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 380px;
+      background: rgba(10, 15, 30, 0.85);
+      border-radius: 20px;
+      padding: 12px;
+      border: 2px solid rgba(0, 210, 255, 0.4);
+      box-shadow: 
+        0 0 25px rgba(0, 210, 255, 0.2),
+        inset 0 0 15px rgba(0, 210, 255, 0.1);
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cell {
+      background: rgba(18, 25, 48, 0.7);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell:hover:not(.taken) {
+      background: rgba(0, 210, 255, 0.15);
+      border-color: rgba(0, 210, 255, 0.6);
+      transform: scale(0.98);
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+    }
+
+    .cell.taken {
+      cursor: default;
+    }
+
+    /* Neon Symbols SVG inside cells */
+    .mark-svg {
+      width: 65%;
+      height: 65%;
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      animation: drawSymbol 0.35s ease-out forwards;
+    }
+
+    @keyframes drawSymbol {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .mark-x {
+      stroke: var(--color-x);
+      filter: drop-shadow(0px 0px 8px var(--glow-x)) drop-shadow(0px 0px 15px var(--glow-x));
+    }
+
+    .mark-o {
+      stroke: var(--color-o);
+      filter: drop-shadow(0px 0px 8px var(--glow-o)) drop-shadow(0px 0px 15px var(--glow-o));
+    }
+
+    /* Winning Ray Overlay Line */
+    .winning-line {
+      position: absolute;
+      background: #ffffff;
+      box-shadow: 
+        0 0 10px #ffffff,
+        0 0 20px #00f3ff,
+        0 0 35px #00f3ff,
+        0 0 50px #00f3ff;
+      border-radius: 4px;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      transform-origin: center;
+    }
+
+    .winning-line.active {
+      opacity: 1;
+      animation: pulseGlow 1.2s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.6) drop-shadow(0 0 15px #00f3ff); }
+    }
+
+    /* Action Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-restart {
+      background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0, 114, 255, 0.4);
+    }
+
+    .btn-restart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 114, 255, 0.6);
+    }
+
+    .btn-reset-score {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex: 0.6;
+    }
+
+    .btn-reset-score:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Instructions Collapsible Box */
+    .instructions-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .instructions-header {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .instructions-card ul {
+      padding-left: 18px;
+    }
+
+    .instructions-card li {
+      margin-bottom: 3px;
+    }
+
+    /* Winning Flash Popup Effect */
+    .result-banner {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(5, 7, 20, 0.88);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .result-banner.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .result-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Responsive Scaling */
+    @media (max-height: 680px) {
+      .container { gap: 10px; }
+      h1 { font-size: 1.7rem; }
+      .instructions-card { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Game Header -->
+    <header>
+      <h1>Neon Tic-Tac-Toe</h1>
+      <p class="subtitle">Edisi Cahaya Neon 3x3</p>
+    </header>
+
+    <!-- Mode Switcher -->
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="friend">👥 Teman</button>
+      <button class="mode-btn" data-mode="bot-easy">🤖 Bot (Santai)</button>
+      <button class="mode-btn" data-mode="bot-hard">🧠 Bot (Pro)</button>
+    </div>
+
+    <div class="symbol-selector" id="symbolSelector">
+      <span class="selector-label">Main Sebagai:</span>
+      <div class="symbol-btn-group">
+        <button class="symbol-btn active" data-symbol="X">
+          <span class="symbol-x">X</span> (Jalan 1)
+        </button>
+        <button class="symbol-btn" data-symbol="O">
+          <span class="symbol-o">O</span> (Jalan 2)
+        </button>
+      </div>
+    </div>
+
+    <!-- Turn Indicator & Score -->
+    <div class="status-card">
+      <div class="turn-badge" id="turnBadge">
+        Giliran: <span class="player-symbol symbol-x" id="turnSymbol">X</span>
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-item">
+          <span class="score-label" id="labelX">Pemain X</span>
+          <span class="score-val symbol-x" id="scoreX">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Seri</span>
+          <span class="score-val" id="scoreDraw" style="color: #fff;">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label" id="labelO">Pemain O</span>
+          <span class="score-val symbol-o" id="scoreO">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3x3 Grid Board -->
+    <div class="board-wrapper">
+      <div class="grid-container" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+
+      <!-- Dynamic Neon Line on Win -->
+      <div class="winning-line" id="winningLine"></div>
+
+      <!-- Result Overlay -->
+      <div class="result-banner" id="resultBanner">
+        <div class="result-title" id="resultTitle">Pemain X Menang!</div>
+        <div class="result-subtitle" id="resultSubtitle">Langkah luar biasa!</div>
+        <button class="btn btn-restart" id="btnPlayAgain" style="width: auto; padding: 10px 24px;">
+          Main Lagi
+        </button>
+      </div>
+    </div>
+
+    <!-- Buttons Controls -->
+    <div class="controls">
+      <button class="btn btn-restart" id="btnRestart">
+        🔄 Mulai Ulang
+      </button>
+      <button class="btn btn-reset-score" id="btnResetScore" title="Reset Poin Skor">
+        Reset Skor
+      </button>
+    </div>
+
+    <!-- How to Play Instructions -->
+    <div class="instructions-card">
+      <div class="instructions-header">
+        💡 Cara Bermain:
+      </div>
+      <ul>
+        <li>Pemain bergantian menaruh simbol <strong>X</strong> atau <strong>O</strong> pada kotak 3x3.</li>
+        <li>Pemenang adalah pemain pertama yang berhasil menyusun <strong>3 simbol sejajar</strong> (Lurus Mendatar, Menurun, atau Miring).</li>
+        <li>Pilih mode melawan teman atau uji kemampuanmu melawan AI Bot!</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    // Game Logic Engine & State Variables
+    let boardState = Array(9).fill(null);
+    let currentPlayer = 'X'; // 'X' always moves first
+    let playerSymbol = 'X';  // Symbol chosen by Human player
+    let botSymbol = 'O';     // Symbol assigned to Bot
+    let gameActive = true;
+    let gameMode = 'friend'; // 'friend', 'bot-easy', 'bot-hard'
+    let scores = { X: 0, O: 0, draw: 0 };
+
+    // Possible Winning Combinations
+    const WINNING_COMBOS = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+      [0, 4, 8], [2, 4, 6]             // Diagonals
+    ];
+
+    // Web Audio Synthesizer for Game Sound FX (No external audio files needed!)
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.1) {
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) { console.error(e); }
+      }
+
+      playX() {
+        this.init();
+        this.playTone(440, 'triangle', 0.12, 0.15); // A4 synth tap
+      }
+
+      playO() {
+        this.init();
+        this.playTone(587.33, 'sine', 0.15, 0.15); // D5 chime
+      }
+
+      playWin() {
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C Major Arpeggio
+        notes.forEach((freq, idx) => {
+          setTimeout(() => this.playTone(freq, 'sine', 0.25, 0.2), idx * 90);
+        });
+      }
+
+      playDraw() {
+        this.init();
+        if (!this.ctx) return;
+        this.playTone(300, 'sawtooth', 0.2, 0.1);
+        setTimeout(() => this.playTone(220, 'sawtooth', 0.3, 0.1), 150);
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // DOM Elements Reference
+    const cells = document.querySelectorAll('.cell');
+    const turnSymbol = document.getElementById('turnSymbol');
+    const winningLine = document.getElementById('winningLine');
+    const resultBanner = document.getElementById('resultBanner');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSubtitle = document.getElementById('resultSubtitle');
+    const scoreX = document.getElementById('scoreX');
+    const scoreO = document.getElementById('scoreO');
+    const scoreDraw = document.getElementById('scoreDraw');
+    const labelO = document.getElementById('labelO');
+    const labelX = document.getElementById('labelX');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnPlayAgain = document.getElementById('btnPlayAgain');
+    const btnResetScore = document.getElementById('btnResetScore');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const symbolBtns = document.querySelectorAll('.symbol-btn');
+
+    // Render SVG Marks inside Cells
+    function createMarkSVG(type) {
+      if (type === 'X') {
+        return `
+          <svg class="mark-svg mark-x" viewBox="0 0 100 100" stroke-width="14" stroke-linecap="round">
+            <line x1="20" y1="20" x2="80" y2="80" />
+            <line x1="80" y1="20" x2="20" y2="80" />
+          </svg>
+        `;
+      } else {
+        return `
+          <svg class="mark-svg mark-o" viewBox="0 0 100 100" stroke-width="14" fill="none">
+            <circle cx="50" cy="50" r="32" />
+          </svg>
+        `;
+      }
+    }
+
+    // Handle Cell Click
+    function handleCellClick(e) {
+      const cell = e.currentTarget;
+      const index = parseInt(cell.getAttribute('data-index'));
+
+      if (boardState[index] !== null || !gameActive) return;
+
+      // In Bot mode, ensure human player can only click during their turn
+      if (gameMode !== 'friend' && currentPlayer !== playerSymbol) return;
+
+      makeMove(index, currentPlayer);
+
+      // Check if Bot turn needed
+      if (gameActive && gameMode !== 'friend' && currentPlayer === botSymbol) {
+        gameActive = false; // Temporarily lock board during bot calculation
+        setTimeout(() => {
+          gameActive = true;
+          botMakeMove();
+        }, 450);
+      }
+    }
+
+    // Apply Move to Board State
+    function makeMove(index, player) {
+      boardState[index] = player;
+      const cell = cells[index];
+      cell.innerHTML = createMarkSVG(player);
+      cell.classList.add('taken');
+
+      if (player === 'X') sfx.playX();
+      else sfx.playO();
+
+      const winCombo = checkWin(boardState, player);
+
+      if (winCombo) {
+        handleWin(player, winCombo);
+      } else if (boardState.every(cell => cell !== null)) {
+        handleDraw();
+      } else {
+        // Switch turn
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        updateTurnDisplay();
+      }
+    }
+
+    // Update Turn Badge UI
+    function updateTurnDisplay() {
+      turnSymbol.textContent = currentPlayer;
+      turnSymbol.className = `player-symbol symbol-${currentPlayer.toLowerCase()}`;
+    }
+
+    // Check Win Condition
+    function checkWin(board, player) {
+      for (let combo of WINNING_COMBOS) {
+        if (combo.every(idx => board[idx] === player)) {
+          return combo;
+        }
+      }
+      return null;
+    }
+
+    // Draw Glowing Win Line
+    function drawWinningLine(combo) {
+      const cellA = cells[combo[0]].getBoundingClientRect();
+      const cellC = cells[combo[2]].getBoundingClientRect();
+      const boardRect = document.getElementById('board').getBoundingClientRect();
+
+      const startX = (cellA.left + cellA.width / 2) - boardRect.left;
+      const startY = (cellA.top + cellA.height / 2) - boardRect.top;
+      const endX = (cellC.left + cellC.width / 2) - boardRect.left;
+      const endY = (cellC.top + cellC.height / 2) - boardRect.top;
+
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      const distance = Math.hypot(deltaX, deltaY);
+      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+      winningLine.style.width = `${distance}px`;
+      winningLine.style.height = `8px`;
+      winningLine.style.left = `${startX}px`;
+      winningLine.style.top = `${startY - 4}px`;
+      winningLine.style.transform = `rotate(${angle}deg)`;
+      winningLine.style.transformOrigin = `0% 50%`;
+      winningLine.classList.add('active');
+    }
+
+    // Handle Victory Event
+    function handleWin(player, combo) {
+      gameActive = false;
+      scores[player]++;
+      updateScoreboard();
+      drawWinningLine(combo);
+      sfx.playWin();
+
+      let winnerText = "";
+      if (gameMode === 'friend') {
+        winnerText = `Pemain ${player} Menang!`;
+      } else {
+        winnerText = player === playerSymbol ? `Kamu (${player}) Menang!` : `Bot (${player}) Menang!`;
+      }
+
+      setTimeout(() => {
+        resultTitle.textContent = winnerText;
+        resultTitle.className = `result-title symbol-${player.toLowerCase()}`;
+        resultSubtitle.textContent = `Selamat! Tiga simbol sejajar.`;
+        resultBanner.classList.add('show');
+      }, 700);
+    }
+
+    // Handle Draw Event
+    function handleDraw() {
+      gameActive = false;
+      scores.draw++;
+      updateScoreboard();
+      sfx.playDraw();
+
+      setTimeout(() => {
+        resultTitle.textContent = `Hasil Seri!`;
+        resultTitle.className = `result-title`;
+        resultTitle.style.color = `#ffffff`;
+        resultSubtitle.textContent = `Permainan berlangsung seimbang.`;
+        resultBanner.classList.add('show');
+      }, 500);
+    }
+
+    // Update Score Board UI
+    function updateScoreboard() {
+      scoreX.textContent = scores.X;
+      scoreO.textContent = scores.O;
+      scoreDraw.textContent = scores.draw;
+    }
+
+    // Bot AI Logic
+    function botMakeMove() {
+      let targetIndex = null;
+
+      if (gameMode === 'bot-easy') {
+        // Random Move Selection
+        const emptyIndices = boardState
+          .map((val, idx) => val === null ? idx : null)
+          .filter(val => val !== null);
+        
+        if (emptyIndices.length > 0) {
+          targetIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+        }
+      } else if (gameMode === 'bot-hard') {
+        // Unbeatable Minimax Algorithm tailored to current bot symbol
+        targetIndex = getBestMoveMinimax();
+      }
+
+      if (targetIndex !== null) {
+        makeMove(targetIndex, botSymbol);
+      }
+    }
+
+    // Minimax Implementation for Unbeatable Bot
+    function getBestMoveMinimax() {
+      let bestScore = -Infinity;
+      let bestMove = null;
+
+      for (let i = 0; i < 9; i++) {
+        if (boardState[i] === null) {
+          boardState[i] = botSymbol;
+          let score = minimax(boardState, 0, false);
+          boardState[i] = null;
+          if (score > bestScore) {
+            bestScore = score;
+            bestMove = i;
+          }
+        }
+      }
+      return bestMove;
+    }
+
+    function minimax(board, depth, isMaximizing) {
+      if (checkWin(board, botSymbol)) return 10 - depth;
+      if (checkWin(board, playerSymbol)) return depth - 10;
+      if (board.every(cell => cell !== null)) return 0;
+
+      if (isMaximizing) {
+        let maxEval = -Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (board[i] === null) {
+            board[i] = botSymbol;
+            let evaluation = minimax(board, depth + 1, false);
+            board[i] = null;
+            maxEval = Math.max(maxEval, evaluation);
+          }
+        }
+        return maxEval;
+      } else {
+        let minEval = Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (board[i] === null) {
+            board[i] = playerSymbol;
+            let evaluation = minimax(board, depth + 1, true);
+            board[i] = null;
+            minEval = Math.min(minEval, evaluation);
+          }
+        }
+        return minEval;
+      }
+    }
+
+    // Reset Game Board
+    function resetGame() {
+      boardState = Array(9).fill(null);
+      currentPlayer = 'X';
+      gameActive = true;
+
+      cells.forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('taken');
+      });
+
+      winningLine.classList.remove('active');
+      resultBanner.classList.remove('show');
+      updateTurnDisplay();
+      updateScoreboardLabels();
+
+      // If playing against Bot and Bot gets to start first (when Bot is X)
+      if (gameMode !== 'friend' && botSymbol === 'X') {
+        gameActive = false;
+        setTimeout(() => {
+          gameActive = true;
+          botMakeMove();
+        }, 400);
+      }
+    }
+
+    // Update Player Labels on Scoreboard
+    function updateScoreboardLabels() {
+      if (gameMode === 'friend') {
+        labelX.textContent = 'Pemain X';
+        labelO.textContent = 'Pemain O';
+      } else {
+        if (playerSymbol === 'X') {
+          labelX.textContent = 'Kamu (X)';
+          labelO.textContent = 'Bot (O)';
+        } else {
+          labelX.textContent = 'Bot (X)';
+          labelO.textContent = 'Kamu (O)';
+        }
+      }
+    }
+
+    // Switch Mode
+    function setGameMode(mode) {
+      gameMode = mode;
+      modeBtns.forEach(btn => {
+        if (btn.getAttribute('data-mode') === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      resetGame();
+    }
+
+    // Switch Player Symbol Choice (X or O)
+    function setPlayerSymbol(symbol) {
+      playerSymbol = symbol;
+      botSymbol = symbol === 'X' ? 'O' : 'X';
+
+      symbolBtns.forEach(btn => {
+        if (btn.getAttribute('data-symbol') === symbol) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      resetGame();
+    }
+
+    // Reset Scoreboard
+    function resetScores() {
+      scores = { X: 0, O: 0, draw: 0 };
+      updateScoreboard();
+    }
+
+    // Event Listeners Initialization
+    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+    btnRestart.addEventListener('click', resetGame);
+    btnPlayAgain.addEventListener('click', resetGame);
+    btnResetScore.addEventListener('click', resetScores);
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        setGameMode(e.currentTarget.getAttribute('data-mode'));
+      });
+    });
+
+    symbolBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        setPlayerSymbol(e.currentTarget.getAttribute('data-symbol'));
+      });
+    });
+
+    // Touch feedback helper
+    document.addEventListener('touchstart', function() {}, {passive: true});
+  </script>
+</body>
+</html>
